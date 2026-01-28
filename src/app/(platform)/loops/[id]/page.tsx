@@ -1,0 +1,183 @@
+'use client'
+
+import { use, useState, useEffect } from 'react'
+import { useProgressStream } from '@/hooks/useProgressStream'
+
+export default function LoopPlaygroundPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const resolvedParams = use(params)
+  const [loop, setLoop] = useState<any>(null)
+  const [apiKeys, setApiKeys] = useState<any[]>([])
+  const [selectedApiKeyId, setSelectedApiKeyId] = useState('')
+  const [isExecuting, setIsExecuting] = useState(false)
+  const { status, progress, currentStep, totalSteps, isConnected } =
+    useProgressStream(isExecuting ? resolvedParams.id : undefined)
+
+  useEffect(() => {
+    // Fetch loop data
+    fetch(`/api/loops/${resolvedParams.id}`)
+      .then((res) => res.json())
+      .then(setLoop)
+
+    // Fetch API keys
+    fetch('/api/api-keys')
+      .then((res) => res.json())
+      .then(setApiKeys)
+  }, [resolvedParams.id])
+
+  const handleExecute = async () => {
+    if (!selectedApiKeyId) {
+      alert('Please select an API key')
+      return
+    }
+
+    setIsExecuting(true)
+
+    try {
+      const response = await fetch(`/api/loops/${resolvedParams.id}/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKeyId: selectedApiKeyId }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to start execution')
+      }
+    } catch (error) {
+      console.error('Execution error:', error)
+      alert('Failed to start execution')
+      setIsExecuting(false)
+    }
+  }
+
+  if (!loop) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">Loading...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{loop.name}</h1>
+        {loop.description && (
+          <p className="text-gray-600">{loop.description}</p>
+        )}
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Left: Editor */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+            PRD Configuration
+          </h2>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              API Key
+            </label>
+            <select
+              value={selectedApiKeyId}
+              onChange={(e) => setSelectedApiKeyId(e.target.value)}
+              disabled={isExecuting}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select an API key</option>
+              {apiKeys.map((key) => (
+                <option key={key.id} value={key.id}>
+                  {key.name} ({key.provider})
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={handleExecute}
+              disabled={isExecuting || !selectedApiKeyId}
+              className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {isExecuting ? 'Executing...' : 'Execute Loop'}
+            </button>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold mb-2 text-gray-900">PRD JSON</h3>
+            <pre className="text-sm bg-gray-50 p-4 rounded overflow-auto max-h-96">
+              {JSON.stringify(loop.prd, null, 2)}
+            </pre>
+          </div>
+        </div>
+
+        {/* Right: Visualization */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+            Execution Progress
+          </h2>
+
+          {!isExecuting ? (
+            <div className="bg-white p-8 rounded-lg shadow-sm text-center">
+              <p className="text-gray-500">
+                Select an API key and click Execute to start
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="bg-white p-6 rounded-lg shadow-sm mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm font-medium text-gray-700">Status:</span>
+                  <span
+                    className={`px-3 py-1 text-sm rounded-full ${
+                      status === 'completed'
+                        ? 'bg-green-100 text-green-800'
+                        : status === 'failed'
+                        ? 'bg-red-100 text-red-800'
+                        : status === 'running'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    {status}
+                  </span>
+                </div>
+
+                <div className="mb-2">
+                  <div className="flex justify-between text-sm text-gray-700 mb-1">
+                    <span>Progress</span>
+                    <span>
+                      Step {currentStep} of {totalSteps}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {isConnected ? (
+                  <p className="text-xs text-green-600 mt-2">● Connected</p>
+                ) : (
+                  <p className="text-xs text-gray-500 mt-2">○ Disconnected</p>
+                )}
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h3 className="text-lg font-semibold mb-2 text-gray-900">
+                  Progress Log
+                </h3>
+                <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-xs overflow-auto max-h-96">
+                  {progress || 'Waiting for output...'}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
