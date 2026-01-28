@@ -2,6 +2,7 @@
 
 import { use, useState, useEffect } from 'react'
 import { useProgressStream } from '@/hooks/useProgressStream'
+import { RalphFlowchart } from '@/components/ralph-flow/RalphFlowchart'
 
 export default function LoopPlaygroundPage({
   params,
@@ -159,13 +160,11 @@ export default function LoopPlaygroundPage({
               <p className="text-gray-500 mb-4">
                 Select an API key and click Execute to start
               </p>
-              <div className="border rounded-lg overflow-hidden shadow-sm">
-                <iframe
-                  src={viewerUrl}
-                  className="w-full h-80"
-                  title="Ralph diagram"
-                />
-              </div>
+              <RalphFlowchart
+                prd={loop.prd}
+                currentStep={currentStep}
+                totalSteps={totalSteps}
+              />
             </div>
           ) : (
             <>
@@ -229,11 +228,13 @@ export default function LoopPlaygroundPage({
                     Open full screen
                   </a>
                 </div>
-                <iframe
-                  src={viewerUrl}
-                  className="w-full h-64 mt-2 border rounded"
-                  title="Ralph diagram live"
-                />
+                <div className="mt-3">
+                  <RalphFlowchart
+                    prd={loop.prd}
+                    currentStep={currentStep}
+                    totalSteps={totalSteps}
+                  />
+                </div>
               </div>
             </>
           )}
