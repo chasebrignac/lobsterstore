@@ -12,6 +12,7 @@ export default function LoopPlaygroundPage({
   const [loop, setLoop] = useState<any>(null)
   const [apiKeys, setApiKeys] = useState<any[]>([])
   const [selectedApiKeyId, setSelectedApiKeyId] = useState('')
+   const [selectedTool, setSelectedTool] = useState('claude-code')
   const [isExecuting, setIsExecuting] = useState(false)
   const { status, progress, currentStep, totalSteps, isConnected } =
     useProgressStream(isExecuting ? resolvedParams.id : undefined)
@@ -40,7 +41,7 @@ export default function LoopPlaygroundPage({
       const response = await fetch(`/api/loops/${resolvedParams.id}/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKeyId: selectedApiKeyId }),
+        body: JSON.stringify({ apiKeyId: selectedApiKeyId, tool: selectedTool }),
       })
 
       if (!response.ok) {
@@ -61,6 +62,10 @@ export default function LoopPlaygroundPage({
     )
   }
 
+  const viewerUrl = `https://snarktank.github.io/ralph/#${encodeURIComponent(
+    JSON.stringify(loop.prd)
+  )}`
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -77,28 +82,46 @@ export default function LoopPlaygroundPage({
             PRD Configuration
           </h2>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              API Key
-            </label>
-            <select
-              value={selectedApiKeyId}
-              onChange={(e) => setSelectedApiKeyId(e.target.value)}
-              disabled={isExecuting}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select an API key</option>
-              {apiKeys.map((key) => (
-                <option key={key.id} value={key.id}>
-                  {key.name} ({key.provider})
-                </option>
-              ))}
-            </select>
+          <div className="bg-white p-6 rounded-lg shadow-sm mb-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                API Key
+              </label>
+              <select
+                value={selectedApiKeyId}
+                onChange={(e) => setSelectedApiKeyId(e.target.value)}
+                disabled={isExecuting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select an API key</option>
+                {apiKeys.map((key) => (
+                  <option key={key.id} value={key.id}>
+                    {key.name} ({key.provider})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Runner
+              </label>
+              <select
+                value={selectedTool}
+                onChange={(e) => setSelectedTool(e.target.value)}
+                disabled={isExecuting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="claude-code">Claude Code</option>
+                <option value="codex">Codex</option>
+                <option value="opencode">OpenCode</option>
+              </select>
+            </div>
 
             <button
               onClick={handleExecute}
               disabled={isExecuting || !selectedApiKeyId}
-              className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {isExecuting ? 'Executing...' : 'Execute Loop'}
             </button>
@@ -109,6 +132,19 @@ export default function LoopPlaygroundPage({
             <pre className="text-sm bg-gray-50 p-4 rounded overflow-auto max-h-96">
               {JSON.stringify(loop.prd, null, 2)}
             </pre>
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <a
+                href={viewerUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 text-sm font-medium"
+              >
+                Open in Ralph viewer
+              </a>
+              <span className="text-xs text-gray-500">
+                Diagram powered by snarktank.github.io/ralph
+              </span>
+            </div>
           </div>
         </div>
 
@@ -120,9 +156,16 @@ export default function LoopPlaygroundPage({
 
           {!isExecuting ? (
             <div className="bg-white p-8 rounded-lg shadow-sm text-center">
-              <p className="text-gray-500">
+              <p className="text-gray-500 mb-4">
                 Select an API key and click Execute to start
               </p>
+              <div className="border rounded-lg overflow-hidden shadow-sm">
+                <iframe
+                  src={viewerUrl}
+                  className="w-full h-80"
+                  title="Ralph diagram"
+                />
+              </div>
             </div>
           ) : (
             <>
@@ -173,6 +216,24 @@ export default function LoopPlaygroundPage({
                 <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-xs overflow-auto max-h-96">
                   {progress || 'Waiting for output...'}
                 </div>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gray-900">Diagram</h3>
+                  <a
+                    href={viewerUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    Open full screen
+                  </a>
+                </div>
+                <iframe
+                  src={viewerUrl}
+                  className="w-full h-64 mt-2 border rounded"
+                  title="Ralph diagram live"
+                />
               </div>
             </>
           )}

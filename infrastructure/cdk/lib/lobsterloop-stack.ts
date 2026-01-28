@@ -108,7 +108,7 @@ export class LobsterLoopStack extends cdk.Stack {
 
     const launchTemplate = new ec2.LaunchTemplate(this, 'LobsterLoopLaunchTemplate', {
       launchTemplateName: 'LobsterLoop-Ralph-Template',
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.M3, ec2.InstanceSize.MEDIUM),
       // Use custom AMI with Ralph + Claude Code pre-installed
       machineImage: ec2.MachineImage.genericLinux({
         'us-east-1': process.env.EC2_AMI_ID || 'ami-0bf2dfe67e7b1f155',

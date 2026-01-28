@@ -4,7 +4,12 @@ import { prisma } from '../db/client'
 import { getAvailableInstance, recycleInstance } from '../aws/ec2'
 import { retrieveApiKey } from '../aws/secrets'
 
-export async function executeLoop(executionId: string): Promise<void> {
+type Tool = 'claude-code' | 'codex' | 'opencode'
+
+export async function executeLoop(
+  executionId: string,
+  tool: Tool = 'claude-code'
+): Promise<void> {
   try {
     // Update execution status
     await prisma.execution.update({
@@ -52,7 +57,8 @@ export async function executeLoop(executionId: string): Promise<void> {
       executionId,
       JSON.stringify(execution.prdSnapshot),
       apiKey,
-      execution.apiKey.provider
+      execution.apiKey.provider,
+      tool
     )
 
     // Start monitoring in background
@@ -75,7 +81,8 @@ async function executeRalphOnEC2(
   executionId: string,
   prdJson: string,
   apiKey: string,
-  provider: string
+  provider: string,
+  tool: Tool
 ): Promise<string> {
   // SECURITY: Use ralph-runner.sh script which handles API keys securely
   // API keys are passed as base64-encoded parameters to avoid logging
@@ -88,9 +95,10 @@ set -e
 # Decode parameters (prevents API keys from appearing in SSM command logs)
 PRD_JSON=$(echo "${encodedPrdJson}" | base64 -d)
 API_KEY=$(echo "${encodedApiKey}" | base64 -d)
+TOOL="${tool}"
 
 # Execute using the pre-installed ralph-runner.sh script
-/opt/lobsterloop/ralph-runner.sh "${executionId}" "$PRD_JSON" "$API_KEY" "${provider}"
+/opt/lobsterloop/ralph-runner.sh "${executionId}" "$PRD_JSON" "$API_KEY" "${provider}" "$TOOL"
 `
 
   const command = new SendCommandCommand({

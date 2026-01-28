@@ -16,11 +16,14 @@ export async function POST(
   }
 
   const body = await request.json()
-  const { apiKeyId } = body
+  const { apiKeyId, tool } = body
 
   if (!apiKeyId) {
     return NextResponse.json({ error: 'API key is required' }, { status: 400 })
   }
+
+  const allowedTools = ['claude-code', 'codex', 'opencode']
+  const resolvedTool = allowedTools.includes(tool) ? tool : 'claude-code'
 
   // Get loop
   const loop = await prisma.loop.findUnique({
@@ -50,6 +53,7 @@ export async function POST(
       loopId: loop.id,
       userId: session.user.id,
       apiKeyId: apiKey.id,
+      // tool is not persisted in the schema; progress log will note it
       status: 'queued',
       prdSnapshot: loop.prd as any,
       totalSteps,
@@ -57,7 +61,7 @@ export async function POST(
   })
 
   // Start execution in background
-  executeLoop(execution.id).catch(console.error)
+  executeLoop(execution.id, resolvedTool).catch(console.error)
 
   return NextResponse.json(execution)
 }

@@ -8,9 +8,10 @@ EXECUTION_ID=$1
 PRD_JSON=$2
 API_KEY=$3
 PROVIDER=$4
+TOOL=$5
 
-if [ -z "$EXECUTION_ID" ] || [ -z "$PRD_JSON" ] || [ -z "$API_KEY" ] || [ -z "$PROVIDER" ]; then
-  echo "Usage: $0 <execution_id> <prd_json> <api_key> <provider>"
+if [ -z "$EXECUTION_ID" ] || [ -z "$PRD_JSON" ] || [ -z "$API_KEY" ] || [ -z "$PROVIDER" ] || [ -z "$TOOL" ]; then
+  echo "Usage: $0 <execution_id> <prd_json> <api_key> <provider> <tool>"
   exit 1
 fi
 
@@ -55,9 +56,25 @@ cp /opt/ralph/ralph.sh .
 cp /opt/ralph/CLAUDE.md .
 echo "Ralph scripts copied"
 
-# Execute Ralph with Claude Code
-echo "Starting Ralph execution..."
-./ralph.sh --tool claude 50 2>&1 | tee ralph-output.log
+# Map friendly tool names to Ralph tool flag
+case "$TOOL" in
+  "claude-code")
+    TOOL_FLAG="claude"
+    ;;
+  "codex")
+    TOOL_FLAG="codex"
+    ;;
+  "opencode")
+    TOOL_FLAG="opencode"
+    ;;
+  *)
+    TOOL_FLAG="claude"
+    ;;
+esac
+
+# Execute Ralph with selected tool
+echo "Starting Ralph execution with tool: $TOOL_FLAG..."
+./ralph.sh --tool "$TOOL_FLAG" 50 2>&1 | tee ralph-output.log
 
 # Save exit code
 EXIT_CODE=${PIPESTATUS[0]}
