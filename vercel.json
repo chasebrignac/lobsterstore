@@ -2,5 +2,18 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install && npx prisma generate",
   "framework": "nextjs",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://lobsterloop.com/$1",
+      "permanent": true,
+      "has": [
+        {
+          "type": "host",
+          "value": "www.lobsterloop.com"
+        }
+      ]
+    }
+  ]
 }

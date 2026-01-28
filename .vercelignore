@@ -7,3 +7,7 @@ DEPLOY.md
 INFRASTRUCTURE_DEPLOYED.md
 CDK_DEPLOYMENT_COMPLETE.md
 .git/
+.env.production
+.env.production.new
+.env
+.env.*

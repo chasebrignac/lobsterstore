@@ -9,6 +9,7 @@ export default async function DiscoverPage() {
       user: {
         select: {
           username: true,
+          name: true,
           avatarUrl: true,
         },
       },
@@ -46,12 +47,12 @@ export default async function DiscoverPage() {
                 {loop.user.avatarUrl && (
                   <img
                     src={loop.user.avatarUrl}
-                    alt={loop.user.username}
+                    alt={loop.user.username || loop.user.name || 'User'}
                     className="w-6 h-6 rounded-full"
                   />
                 )}
                 <span className="text-sm text-gray-600">
-                  @{loop.user.username}
+                  @{loop.user.username || loop.user.name || 'Anonymous'}
                 </span>
               </div>
 
