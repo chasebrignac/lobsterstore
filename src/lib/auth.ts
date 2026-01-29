@@ -12,31 +12,24 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GITHUB_CLIENT_ID!.trim(),
       clientSecret: process.env.GITHUB_CLIENT_SECRET!.trim(),
     }),
-    ...(process.env.ALLOW_TEST_LOGIN === 'true'
-      ? [
-          CredentialsProvider({
-            id: 'credentials',
-            name: 'Test Account',
-            credentials: {
-              email: { label: 'Email', type: 'text' },
-              password: { label: 'Password', type: 'password' },
-            },
-            async authorize(credentials) {
-              if (!credentials?.email || !credentials?.password) return null
-              const user = await prisma.user.findUnique({
-                where: { email: credentials.email },
-              })
-              if (!user || !user.passwordHash) return null
-              const valid = await bcrypt.compare(
-                credentials.password,
-                user.passwordHash
-              )
-              if (!valid) return null
-              return user as any
-            },
-          }),
-        ]
-      : []),
+    CredentialsProvider({
+      id: 'credentials',
+      name: 'Test Account',
+      credentials: {
+        email: { label: 'Email', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        })
+        if (!user || !user.passwordHash) return null
+        const valid = await bcrypt.compare(credentials.password, user.passwordHash)
+        if (!valid) return null
+        return user as any
+      },
+    }),
   ],
   debug: process.env.NEXTAUTH_DEBUG === 'true',
   logger: {
