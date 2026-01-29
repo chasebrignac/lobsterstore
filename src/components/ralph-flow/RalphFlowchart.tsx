@@ -161,28 +161,32 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
     return makeEdge(step.id, next.id, status)
   })
 
+  const canvasWidth = Math.max(steps.length * 260, 800)
+
   return (
     <div className={styles.flowWrapper}>
-      <div className={styles.flowInner}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          elementsSelectable={false}
-          panOnScroll
-          zoomOnScroll
-          fitView
-          fitViewOptions={{ padding: 0.25 }}
-          zoomOnDoubleClick={false}
-          panOnDrag
-          proOptions={{ hideAttribution: true }}
-          style={{ width: '100%', height: '100%' }}
-        >
-          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
-          <Controls showInteractive={false} />
-        </ReactFlow>
+      <div className={styles.scrollOuter}>
+        <div className={styles.flowInner} style={{ minWidth: canvasWidth }}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            elementsSelectable={false}
+            panOnScroll
+            zoomOnScroll
+            fitView
+            fitViewOptions={{ padding: 0.25 }}
+            zoomOnDoubleClick={false}
+            panOnDrag
+            proOptions={{ hideAttribution: true }}
+            style={{ width: '100%', height: '100%' }}
+          >
+            <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
+            <Controls showInteractive={false} />
+          </ReactFlow>
+        </div>
       </div>
     </div>
   )
