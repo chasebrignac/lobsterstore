@@ -11,7 +11,7 @@ import {
   type Node,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import './flowchart.css'
+import styles from './flowchart.module.css'
 
 type RalphPrd = {
   userStories?: {
@@ -103,17 +103,17 @@ function CustomNode({
   const isDone = data.status === 'done'
   return (
     <div
-      className="flow-node"
+      className={styles.flowNode}
       style={{
         background: colors.bg,
         borderColor: isActive ? '#60a5fa' : isDone ? '#22c55e' : colors.border,
       }}
     >
-      <div className="flow-node__title">{data.title}</div>
+      <div className={styles.flowNodeTitle}>{data.title}</div>
       {data.description ? (
-        <div className="flow-node__desc">{data.description}</div>
+        <div className={styles.flowNodeDesc}>{data.description}</div>
       ) : null}
-      <div className="flow-node__pill">
+      <div className={styles.flowNodePill}>
         {isDone ? 'Done' : isActive ? 'Running' : 'Pending'}
       </div>
     </div>
@@ -162,7 +162,7 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
   })
 
   return (
-    <div className="flow-wrapper">
+    <div className={styles.flowWrapper}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
