@@ -79,3 +79,34 @@
 .react-flow__panel {
   z-index: 5;
 }
+
+.debugPanel {
+  background: #0b1220;
+  border-top: 1px solid #1f2937;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #cbd5e1;
+  display: grid;
+  gap: 4px;
+}
+
+.debugTitle {
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.debugList {
+  display: grid;
+  gap: 2px;
+}
+
+.debugRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.debugId {
+  font-weight: 700;
+  color: #60a5fa;
+}

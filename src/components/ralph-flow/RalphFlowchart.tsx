@@ -190,6 +190,23 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
           </ReactFlow>
         </div>
       </div>
+      <div className={styles.debugPanel}>
+        <div className={styles.debugTitle}>Flow debug</div>
+        <div className={styles.debugList}>
+          {nodes.map((n) => {
+            const status = (n.data as any)?.status ?? 'unknown'
+            return (
+              <div key={n.id} className={styles.debugRow}>
+                <span className={styles.debugId}>{n.id}</span>
+                <span>
+                  x: {Math.round(n.position.x)} y: {Math.round(n.position.y)}
+                </span>
+                <span>Status: {status}</span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }
