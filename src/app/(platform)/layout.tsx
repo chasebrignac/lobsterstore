@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { LogoutButton } from '@/components/auth/LogoutButton'
 
 export default async function PlatformLayout({
   children,
@@ -52,7 +53,10 @@ export default async function PlatformLayout({
               >
                 API Keys
               </Link>
-              <span className="text-gray-400 text-sm">{session.user?.name || session.user?.email}</span>
+              <span className="text-gray-300 text-sm">
+                {session.user?.name || session.user?.email}
+              </span>
+              <LogoutButton />
             </div>
           </div>
         </div>
