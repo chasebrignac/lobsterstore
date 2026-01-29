@@ -1,6 +1,17 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import {
+  Background,
+  BackgroundVariant,
+  Controls,
+  MarkerType,
+  ReactFlow,
+  type Edge,
+  type Node,
+} from '@xyflow/react'
+import '@xyflow/react/dist/style.css'
+import './flowchart.css'
 
 type RalphPrd = {
   userStories?: {
@@ -16,101 +27,159 @@ type Props = {
   totalSteps: number
 }
 
+type Phase = 'setup' | 'loop' | 'done'
+
+const phaseColors: Record<Phase, { bg: string; border: string }> = {
+  setup: { bg: '#111827', border: '#60a5fa' },
+  loop: { bg: '#0f172a', border: '#a78bfa' },
+  done: { bg: '#0f172a', border: '#22c55e' },
+}
+
+const nodeSize = { w: 240, h: 86 }
+const xSpacing = 260
+const yBase = 80
+
+function makeNode(
+  stepId: string,
+  title: string,
+  description: string,
+  phase: Phase,
+  status: 'pending' | 'active' | 'done',
+  index: number
+): Node {
+  const colors = phaseColors[phase]
+  const isActive = status === 'active'
+  const isDone = status === 'done'
+
+  return {
+    id: stepId,
+    type: 'custom',
+    position: { x: index * xSpacing, y: yBase },
+    data: { title, description, phase, status },
+    draggable: false,
+    style: {
+      width: nodeSize.w,
+      height: nodeSize.h,
+      opacity: 1,
+      background: colors.bg,
+      border: `2px solid ${isActive ? '#60a5fa' : isDone ? '#22c55e' : colors.border}`,
+      boxShadow: isActive
+        ? '0 0 0 2px #1d4ed850, 0 10px 30px rgba(0,0,0,0.35)'
+        : '0 6px 18px rgba(0,0,0,0.2)',
+      transition: 'border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease',
+      transform: isActive ? 'translateY(-4px)' : 'none',
+    },
+  }
+}
+
+function makeEdge(
+  source: string,
+  target: string,
+  status: 'pending' | 'active' | 'done'
+): Edge {
+  const color =
+    status === 'done' ? '#22c55e' : status === 'active' ? '#60a5fa' : '#4b5563'
+  return {
+    id: `e-${source}-${target}`,
+    source,
+    target,
+    animated: status !== 'pending',
+    style: {
+      stroke: color,
+      strokeWidth: 3,
+      opacity: 1,
+    },
+    markerEnd: { type: MarkerType.ArrowClosed, color },
+  }
+}
+
+function CustomNode({
+  data,
+}: {
+  data: { title: string; description?: string; phase: Phase; status: string }
+}) {
+  const colors = phaseColors[data.phase]
+  const isActive = data.status === 'active'
+  const isDone = data.status === 'done'
+  return (
+    <div
+      className="flow-node"
+      style={{
+        background: colors.bg,
+        borderColor: isActive ? '#60a5fa' : isDone ? '#22c55e' : colors.border,
+      }}
+    >
+      <div className="flow-node__title">{data.title}</div>
+      {data.description ? (
+        <div className="flow-node__desc">{data.description}</div>
+      ) : null}
+      <div className="flow-node__pill">
+        {isDone ? 'Done' : isActive ? 'Running' : 'Pending'}
+      </div>
+    </div>
+  )
+}
+
+const nodeTypes = { custom: CustomNode }
+
 export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
-  const stories = prd?.userStories ?? []
+  const stories =
+    prd?.userStories && prd.userStories.length > 0
+      ? prd.userStories
+      : Array.from({ length: totalSteps || 5 }).map((_, idx) => ({
+          id: `STEP-${idx + 1}`,
+          title: `Step ${idx + 1}`,
+          description: '',
+        }))
+
   const steps = useMemo(
-    () =>
-      (stories.length > 0 ? stories : undefined) ??
-      Array.from({ length: totalSteps || 10 }).map((_, i) => ({
-        id: `STEP-${i + 1}`,
-        title: `Step ${i + 1}`,
-        description: '',
+    () => [
+      { id: 'start', title: 'Start', description: 'Kick off loop', phase: 'setup' as Phase },
+      ...stories.map((s, idx) => ({
+        id: s.id || `story-${idx + 1}`,
+        title: s.title || `Story ${idx + 1}`,
+        description: s.description || '',
+        phase: 'loop' as Phase,
       })),
-    [stories, totalSteps]
+      { id: 'done', title: 'Done', description: 'All stories complete', phase: 'done' as Phase },
+    ],
+    [stories]
   )
 
-  const nodes = steps.map((s, idx) => ({
-    id: s.id ?? `STEP-${idx + 1}`,
-    title: s.title || s.id || `Step ${idx + 1}`,
-    description: s.description || '',
-    status:
-      idx + 1 < currentStep
-        ? 'done'
-        : idx + 1 === currentStep
-        ? 'active'
-        : 'pending',
-  }))
+  const activeIndex = Math.min(Math.max(currentStep, 1), steps.length)
 
-  const width = Math.max(320, nodes.length * 180)
-  const height = 160
-  const nodeY = 70
-  const nodeSpacing = Math.max(140, width / Math.max(nodes.length, 1))
+  const nodes: Node[] = steps.map((step, idx) => {
+    const status =
+      idx + 1 < activeIndex ? 'done' : idx + 1 === activeIndex ? 'active' : 'pending'
+    return makeNode(step.id, step.title, step.description, step.phase, status, idx)
+  })
+
+  const edges: Edge[] = steps.slice(0, -1).map((step, idx) => {
+    const next = steps[idx + 1]
+    const status =
+      idx + 1 < activeIndex ? 'done' : idx + 1 === activeIndex ? 'active' : 'pending'
+    return makeEdge(step.id, next.id, status)
+  })
 
   return (
-    <div className="overflow-x-auto">
-      <svg
-        width={width}
-        height={height}
-        className="bg-gray-900 border border-gray-800 rounded-lg"
+    <div className="flow-wrapper">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        panOnScroll
+        zoomOnScroll
+        fitView
+        fitViewOptions={{ padding: 0.25 }}
+        zoomOnDoubleClick={false}
+        panOnDrag
       >
-        {/* Edges */}
-        {nodes.map((_, idx) => {
-          if (idx === 0) return null
-          const x1 = nodeSpacing * (idx - 1) + 60
-          const x2 = nodeSpacing * idx + 20
-          const status = nodes[idx - 1].status === 'done' ? 'done' : 'pending'
-          return (
-            <line
-              key={`edge-${idx}`}
-              x1={x1}
-              y1={nodeY}
-              x2={x2}
-              y2={nodeY}
-              stroke={status === 'done' ? '#22c55e' : '#4b5563'}
-              strokeWidth={3}
-              strokeLinecap="round"
-            />
-          )
-        })}
-
-        {/* Nodes */}
-        {nodes.map((node, idx) => {
-          const x = nodeSpacing * idx + 20
-          const isActive = node.status === 'active'
-          const isDone = node.status === 'done'
-          const fill = isActive
-            ? '#1d4ed8'
-            : isDone
-            ? '#16a34a'
-            : '#111827'
-          const stroke = isActive ? '#60a5fa' : isDone ? '#22c55e' : '#4b5563'
-
-          return (
-            <g key={node.id} transform={`translate(${x},${nodeY})`}>
-              <circle r={22} fill={fill} stroke={stroke} strokeWidth={2} />
-              <text
-                x="0"
-                y="5"
-                textAnchor="middle"
-                fontSize="14"
-                fill={isActive || isDone ? '#ffffff' : '#d1d5db'}
-                fontWeight="700"
-              >
-                {idx + 1}
-              </text>
-              <text
-                x="0"
-                y="42"
-                textAnchor="middle"
-                fontSize="12"
-                fill="#e5e7eb"
-              >
-                {node.title}
-              </text>
-            </g>
-          )
-        })}
-      </svg>
+        <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
+        <Controls showInteractive={false} />
+      </ReactFlow>
     </div>
   )
 }
