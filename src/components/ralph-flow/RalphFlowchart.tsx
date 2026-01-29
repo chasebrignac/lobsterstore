@@ -166,32 +166,39 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
   const canvasWidth = Math.max(steps.length * 260, 800)
 
   return (
-    <div className={styles.flowWrapper}>
-      <div className={styles.scrollOuter}>
-        <div className={styles.flowInner} style={{ minWidth: canvasWidth }}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            nodeTypes={nodeTypes}
-            nodesDraggable={false}
-            nodesConnectable={false}
-            elementsSelectable={false}
-            panOnScroll
-            zoomOnScroll
-            fitView
-            fitViewOptions={{ padding: 0.25 }}
-            zoomOnDoubleClick={false}
-            panOnDrag
-            proOptions={{ hideAttribution: true }}
-            style={{ width: '100%', height: '100%' }}
-          >
-            <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
-            <Controls showInteractive={false} />
-          </ReactFlow>
+    <>
+      <div className={styles.flowWrapper}>
+        <div className={styles.scrollOuter}>
+          <div className={styles.flowInner} style={{ minWidth: canvasWidth }}>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              nodeTypes={nodeTypes}
+              nodesDraggable={false}
+              nodesConnectable={false}
+              elementsSelectable={false}
+              panOnScroll
+              zoomOnScroll
+              minZoom={0.5}
+              maxZoom={2}
+              defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
+              fitView
+              fitViewOptions={{ padding: 0.3 }}
+              zoomOnDoubleClick={false}
+              panOnDrag
+              proOptions={{ hideAttribution: true }}
+              style={{ width: '100%', height: '100%' }}
+            >
+              <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
+              <Controls showInteractive={false} />
+            </ReactFlow>
+          </div>
         </div>
       </div>
       <div className={styles.debugPanel}>
-        <div className={styles.debugTitle}>Flow debug</div>
+        <div className={styles.debugTitle}>
+          Flow debug ({nodes.length} nodes / {edges.length} edges)
+        </div>
         <div className={styles.debugList}>
           {nodes.map((n) => {
             const status = (n.data as any)?.status ?? 'unknown'
@@ -207,6 +214,6 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
           })}
         </div>
       </div>
-    </div>
+    </>
   )
 }
