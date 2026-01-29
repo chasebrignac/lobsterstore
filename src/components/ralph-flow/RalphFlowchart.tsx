@@ -1,18 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  Background,
-  BackgroundVariant,
-  Controls,
-  MarkerType,
-  ReactFlow,
-  type Edge,
-  type Node,
-  type ReactFlowInstance,
-  type Viewport,
-} from '@xyflow/react'
-import '@xyflow/react/dist/style.css'
+import React, { useMemo } from 'react'
 import styles from './flowchart.module.css'
 
 type RalphPrd = {
@@ -41,70 +29,36 @@ const nodeSize = { w: 240, h: 86 }
 const xSpacing = 280
 const yBase = 60
 
-function makeNode(
-  stepId: string,
-  title: string,
-  description: string,
-  phase: Phase,
-  status: 'pending' | 'active' | 'done',
-  index: number
-): Node {
+type UiNode = {
+  id: string
+  title: string
+  description: string
+  phase: Phase
+  status: 'pending' | 'active' | 'done'
+  position: { x: number; y: number }
+}
+
+type UiEdge = {
+  id: string
+  source: UiNode
+  target: UiNode
+  status: 'pending' | 'active' | 'done'
+}
+
+function NodeCard({
+  title,
+  description,
+  phase,
+  status,
+}: {
+  title: string
+  description?: string
+  phase: Phase
+  status: 'pending' | 'active' | 'done'
+}) {
   const colors = phaseColors[phase]
   const isActive = status === 'active'
   const isDone = status === 'done'
-  const x = index * xSpacing
-  const y = yBase + (index % 2) * 140
-
-  return {
-    id: stepId,
-    type: 'custom',
-    position: { x, y },
-    data: { title, description, phase, status },
-    draggable: false,
-    style: {
-      width: nodeSize.w,
-      height: nodeSize.h,
-      opacity: 1,
-      background: colors.bg,
-      border: `2px solid ${isActive ? '#60a5fa' : isDone ? '#22c55e' : colors.border}`,
-      boxShadow: isActive
-        ? '0 0 0 2px #1d4ed850, 0 10px 30px rgba(0,0,0,0.35)'
-        : '0 6px 18px rgba(0,0,0,0.2)',
-      transition: 'border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease',
-      transform: isActive ? 'translateY(-4px)' : 'none',
-    },
-  }
-}
-
-function makeEdge(
-  source: string,
-  target: string,
-  status: 'pending' | 'active' | 'done'
-): Edge {
-  const color =
-    status === 'done' ? '#22c55e' : status === 'active' ? '#60a5fa' : '#4b5563'
-  return {
-    id: `e-${source}-${target}`,
-    source,
-    target,
-    animated: status !== 'pending',
-    style: {
-      stroke: color,
-      strokeWidth: 3,
-      opacity: 1,
-    },
-    markerEnd: { type: MarkerType.ArrowClosed, color },
-  }
-}
-
-function CustomNode({
-  data,
-}: {
-  data: { title: string; description?: string; phase: Phase; status: string }
-}) {
-  const colors = phaseColors[data.phase]
-  const isActive = data.status === 'active'
-  const isDone = data.status === 'done'
   return (
     <div
       className={styles.flowNode}
@@ -113,18 +67,14 @@ function CustomNode({
         borderColor: isActive ? '#60a5fa' : isDone ? '#22c55e' : colors.border,
       }}
     >
-      <div className={styles.flowNodeTitle}>{data.title}</div>
-      {data.description ? (
-        <div className={styles.flowNodeDesc}>{data.description}</div>
-      ) : null}
+      <div className={styles.flowNodeTitle}>{title}</div>
+      {description ? <div className={styles.flowNodeDesc}>{description}</div> : null}
       <div className={styles.flowNodePill}>
         {isDone ? 'Done' : isActive ? 'Running' : 'Pending'}
       </div>
     </div>
   )
 }
-
-const nodeTypes = { custom: CustomNode }
 
 export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
   const stories =
@@ -152,146 +102,115 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
 
   const activeIndex = Math.min(Math.max(currentStep, 1), steps.length)
 
-  const nodes: Node[] = steps.map((step, idx) => {
+  const nodes: UiNode[] = steps.map((step, idx) => {
     const status =
       idx + 1 < activeIndex ? 'done' : idx + 1 === activeIndex ? 'active' : 'pending'
-    return makeNode(step.id, step.title, step.description, step.phase, status, idx)
-  })
-
-  const edges: Edge[] = steps.slice(0, -1).map((step, idx) => {
-    const next = steps[idx + 1]
-    const status =
-      idx + 1 < activeIndex ? 'done' : idx + 1 === activeIndex ? 'active' : 'pending'
-    return makeEdge(step.id, next.id, status)
-  })
-
-  const canvasWidth = Math.max(steps.length * 280, 900)
-
-  const instanceRef = useRef<ReactFlowInstance | null>(null)
-  const [viewport, setViewport] = useState<Viewport | null>(null)
-  const [rfNodes, setRfNodes] = useState<Node[]>([])
-
-  useEffect(() => {
-    if (instanceRef.current) {
-      // Fit to all nodes whenever node count changes
-      instanceRef.current.fitView({ padding: 0.4, includeHiddenNodes: true })
-      setViewport(instanceRef.current.getViewport())
-      setRfNodes(instanceRef.current.getNodes())
+    const x = idx * xSpacing
+    const y = yBase + (idx % 2) * 140
+    return {
+      id: step.id,
+      title: step.title,
+      description: step.description,
+      phase: step.phase,
+      status,
+      position: { x, y },
     }
-  }, [nodes.length])
+  })
 
-  // Debug overlay coordinates (screen space)
-  const overlayNodes = useMemo(() => {
-    if (!viewport) return []
-    const z = viewport.zoom || 1
-    return nodes.map((n) => ({
-      id: n.id,
-      x: n.position.x * z + viewport.x,
-      y: n.position.y * z + viewport.y,
-      w: nodeSize.w * z,
-      h: nodeSize.h * z,
-      status: (n.data as any)?.status ?? 'unknown',
-    }))
-  }, [nodes, viewport])
+  const edges: UiEdge[] = steps.slice(0, -1).map((_, idx) => {
+    const source = nodes[idx]
+    const target = nodes[idx + 1]
+    const status =
+      idx + 1 < activeIndex ? 'done' : idx + 1 === activeIndex ? 'active' : 'pending'
+    return { id: `e-${source.id}-${target.id}`, source, target, status }
+  })
+
+  const canvasWidth = Math.max(steps.length * xSpacing, 900)
+  const canvasHeight = 320
 
   return (
     <>
       <div className={styles.flowWrapper}>
         <div className={styles.scrollOuter}>
-          <div className={styles.flowInner} style={{ minWidth: canvasWidth }}>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              nodeTypes={nodeTypes}
-              nodesDraggable={false}
-              nodesConnectable={false}
-              elementsSelectable={false}
-              panOnScroll
-              zoomOnScroll
-              minZoom={0.5}
-              maxZoom={2}
-              fitView
-              fitViewOptions={{ padding: 0.4 }}
-              onInit={(instance) => {
-                instanceRef.current = instance
-                instance.fitView({ padding: 0.4, includeHiddenNodes: true })
-                setViewport(instance.getViewport())
-              }}
-              zoomOnDoubleClick={false}
-              panOnDrag
-              proOptions={{ hideAttribution: true }}
-              style={{ width: '100%', height: '100%' }}
-              selectNodesOnDrag={false}
-              onMoveEnd={(_, vp) => setViewport(vp)}
-              onNodesChange={() => {
-                if (instanceRef.current) setRfNodes(instanceRef.current.getNodes())
-              }}
-            >
-              <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
-              <Controls showInteractive={false} />
-            </ReactFlow>
-            {overlayNodes.length > 0 && (
-              <div className={styles.overlay}>
-                {overlayNodes.map((n) => (
-                  <div
-                    key={`overlay-${n.id}`}
-                    className={styles.overlayNode}
-                    style={{
-                      left: n.x,
-                      top: n.y,
-                      width: n.w,
-                      height: n.h,
-                    }}
-                  >
-                    {n.id} ({n.status})
-                  </div>
-                ))}
+          <div
+            className={styles.flowInner}
+            style={{ minWidth: canvasWidth, height: canvasHeight, position: 'relative' }}
+          >
+            <svg className={styles.edgeLayer} width={canvasWidth} height={canvasHeight}>
+              <defs>
+                <marker
+                  id="arrow"
+                  markerWidth="10"
+                  markerHeight="10"
+                  refX="10"
+                  refY="5"
+                  orient="auto"
+                  markerUnits="userSpaceOnUse"
+                >
+                  <path d="M0,0 L10,5 L0,10 z" fill="#334155" />
+                </marker>
+              </defs>
+              {edges.map((edge) => {
+                const { source, target, status } = edge
+                const color =
+                  status === 'done' ? '#22c55e' : status === 'active' ? '#60a5fa' : '#4b5563'
+                const x1 = source.position.x + nodeSize.w
+                const y1 = source.position.y + nodeSize.h / 2
+                const x2 = target.position.x
+                const y2 = target.position.y + nodeSize.h / 2
+                return (
+                  <line
+                    key={edge.id}
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke={color}
+                    strokeWidth={3}
+                    strokeLinecap="round"
+                    markerEnd="url(#arrow)"
+                  />
+                )
+              })}
+            </svg>
+
+            {nodes.map((n) => (
+              <div
+                key={n.id}
+                className={styles.nodeWrapper}
+                style={{
+                  left: n.position.x,
+                  top: n.position.y,
+                  width: nodeSize.w,
+                  height: nodeSize.h,
+                }}
+              >
+                <NodeCard
+                  title={n.title}
+                  description={n.description}
+                  phase={n.phase}
+                  status={n.status}
+                />
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
+
       <div className={styles.debugPanel}>
         <div className={styles.debugTitle}>
           Flow debug ({nodes.length} nodes / {edges.length} edges)
         </div>
         <div className={styles.debugList}>
-          {viewport && (
-            <div className={styles.debugRow}>
-              <span className={styles.debugId}>viewport</span>
+          {nodes.map((n) => (
+            <div key={n.id} className={styles.debugRow}>
+              <span className={styles.debugId}>{n.id}</span>
               <span>
-                x: {viewport.x.toFixed(1)} y: {viewport.y.toFixed(1)} zoom:{' '}
-                {viewport.zoom.toFixed(2)}
+                x: {Math.round(n.position.x)} y: {Math.round(n.position.y)}
               </span>
+              <span>Status: {n.status}</span>
             </div>
-          )}
-          {rfNodes.length > 0 && (
-            <div className={styles.debugRow}>
-              <span className={styles.debugId}>rf nodes</span>
-              <span>
-                {rfNodes
-                  .map(
-                    (n) =>
-                      `${n.id}[${Math.round(n.position.x)},${Math.round(
-                        n.position.y
-                      )}]`
-                  )
-                  .join(' • ')}
-              </span>
-            </div>
-          )}
-          {nodes.map((n) => {
-            const status = (n.data as any)?.status ?? 'unknown'
-            return (
-              <div key={n.id} className={styles.debugRow}>
-                <span className={styles.debugId}>{n.id}</span>
-                <span>
-                  x: {Math.round(n.position.x)} y: {Math.round(n.position.y)}
-                </span>
-                <span>Status: {status}</span>
-              </div>
-            )
-          })}
+          ))}
         </div>
       </div>
     </>
