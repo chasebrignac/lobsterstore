@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Background,
   BackgroundVariant,
@@ -9,6 +9,8 @@ import {
   ReactFlow,
   type Edge,
   type Node,
+  type ReactFlowInstance,
+  type Viewport,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import styles from './flowchart.module.css'
@@ -163,7 +165,18 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
     return makeEdge(step.id, next.id, status)
   })
 
-  const canvasWidth = Math.max(steps.length * 260, 800)
+  const canvasWidth = Math.max(steps.length * 280, 900)
+
+  const instanceRef = useRef<ReactFlowInstance | null>(null)
+  const [viewport, setViewport] = useState<Viewport | null>(null)
+
+  useEffect(() => {
+    if (instanceRef.current) {
+      // Fit to all nodes whenever node count changes
+      instanceRef.current.fitView({ padding: 0.4, includeHiddenNodes: true })
+      setViewport(instanceRef.current.getViewport())
+    }
+  }, [nodes.length])
 
   return (
     <>
@@ -182,13 +195,18 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
               minZoom={0.5}
               maxZoom={2}
               fitView
-              fitViewOptions={{ padding: 0.35 }}
-              onInit={(instance) => instance.fitView({ padding: 0.35 })}
+              fitViewOptions={{ padding: 0.4 }}
+              onInit={(instance) => {
+                instanceRef.current = instance
+                instance.fitView({ padding: 0.4, includeHiddenNodes: true })
+                setViewport(instance.getViewport())
+              }}
               zoomOnDoubleClick={false}
               panOnDrag
               proOptions={{ hideAttribution: true }}
               style={{ width: '100%', height: '100%' }}
               selectNodesOnDrag={false}
+              onMoveEnd={(_, vp) => setViewport(vp)}
             >
               <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
               <Controls showInteractive={false} />
@@ -201,6 +219,15 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
           Flow debug ({nodes.length} nodes / {edges.length} edges)
         </div>
         <div className={styles.debugList}>
+          {viewport && (
+            <div className={styles.debugRow}>
+              <span className={styles.debugId}>viewport</span>
+              <span>
+                x: {viewport.x.toFixed(1)} y: {viewport.y.toFixed(1)} zoom:{' '}
+                {viewport.zoom.toFixed(2)}
+              </span>
+            </div>
+          )}
           {nodes.map((n) => {
             const status = (n.data as any)?.status ?? 'unknown'
             return (
