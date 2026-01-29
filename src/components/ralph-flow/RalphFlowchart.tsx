@@ -178,6 +178,20 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
     }
   }, [nodes.length])
 
+  // Debug overlay coordinates (screen space)
+  const overlayNodes = useMemo(() => {
+    if (!viewport) return []
+    const z = viewport.zoom || 1
+    return nodes.map((n) => ({
+      id: n.id,
+      x: n.position.x * z + viewport.x,
+      y: n.position.y * z + viewport.y,
+      w: nodeSize.w * z,
+      h: nodeSize.h * z,
+      status: (n.data as any)?.status ?? 'unknown',
+    }))
+  }, [nodes, viewport])
+
   return (
     <>
       <div className={styles.flowWrapper}>
@@ -211,6 +225,24 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
               <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
               <Controls showInteractive={false} />
             </ReactFlow>
+            {overlayNodes.length > 0 && (
+              <div className={styles.overlay}>
+                {overlayNodes.map((n) => (
+                  <div
+                    key={`overlay-${n.id}`}
+                    className={styles.overlayNode}
+                    style={{
+                      left: n.x,
+                      top: n.y,
+                      width: n.w,
+                      height: n.h,
+                    }}
+                  >
+                    {n.id} ({n.status})
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
