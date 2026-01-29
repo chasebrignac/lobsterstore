@@ -163,23 +163,27 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
 
   return (
     <div className={styles.flowWrapper}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        panOnScroll
-        zoomOnScroll
-        fitView
-        fitViewOptions={{ padding: 0.25 }}
-        zoomOnDoubleClick={false}
-        panOnDrag
-      >
-        <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
-        <Controls showInteractive={false} />
-      </ReactFlow>
+      <div className={styles.flowInner}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          panOnScroll
+          zoomOnScroll
+          fitView
+          fitViewOptions={{ padding: 0.25 }}
+          zoomOnDoubleClick={false}
+          panOnDrag
+          proOptions={{ hideAttribution: true }}
+          style={{ width: '100%', height: '100%' }}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
+          <Controls showInteractive={false} />
+        </ReactFlow>
+      </div>
     </div>
   )
 }
