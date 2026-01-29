@@ -63,10 +63,6 @@ export default function LoopPlaygroundPage({
     )
   }
 
-  const viewerUrl = `https://snarktank.github.io/ralph/#${encodeURIComponent(
-    JSON.stringify(loop.prd)
-  )}`
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -128,25 +124,15 @@ export default function LoopPlaygroundPage({
             </button>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold mb-2 text-gray-900">PRD JSON</h3>
-            <pre className="text-sm bg-gray-50 p-4 rounded overflow-auto max-h-96">
-              {JSON.stringify(loop.prd, null, 2)}
-            </pre>
-            <div className="mt-4 flex items-center justify-between gap-3">
-              <a
-                href={viewerUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 text-sm font-medium"
-              >
-                Open in Ralph viewer
-              </a>
-              <span className="text-xs text-gray-500">
-                Diagram powered by snarktank.github.io/ralph
-              </span>
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">PRD JSON</h3>
+              <pre className="text-sm bg-gray-50 p-4 rounded overflow-auto max-h-96">
+                {JSON.stringify(loop.prd, null, 2)}
+              </pre>
+              <p className="mt-3 text-xs text-gray-500">
+                Diagram below is rendered in-app from this PRD; no external viewer required.
+              </p>
             </div>
-          </div>
         </div>
 
         {/* Right: Visualization */}
@@ -155,89 +141,72 @@ export default function LoopPlaygroundPage({
             Execution Progress
           </h2>
 
-          {!isExecuting ? (
-            <div className="bg-white p-8 rounded-lg shadow-sm text-center">
-              <p className="text-gray-500 mb-4">
-                Select an API key and click Execute to start
-              </p>
+          <div className="bg-white p-6 rounded-lg shadow-sm mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-medium text-gray-700">Status:</span>
+              <span
+                className={`px-3 py-1 text-sm rounded-full ${
+                  status === 'completed'
+                    ? 'bg-green-100 text-green-800'
+                    : status === 'failed'
+                    ? 'bg-red-100 text-red-800'
+                    : status === 'running'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                {status}
+              </span>
+            </div>
+
+            <div className="mb-2">
+              <div className="flex justify-between text-sm text-gray-700 mb-1">
+                <span>Progress</span>
+                <span>
+                  Step {currentStep} of {totalSteps}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {isConnected ? (
+              <p className="text-xs text-green-600 mt-2">● Connected</p>
+            ) : (
+              <p className="text-xs text-gray-500 mt-2">○ Disconnected</p>
+            )}
+          </div>
+
+          <div className="bg-white p-4 rounded-lg shadow-sm">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-900">
+                Live Diagram
+              </h3>
+              <span className="text-xs text-gray-500">
+                Rendered in-app from PRD
+              </span>
+            </div>
+            <div className="mt-3">
               <RalphFlowchart
                 prd={loop.prd}
                 currentStep={currentStep}
                 totalSteps={totalSteps}
               />
             </div>
-          ) : (
-            <>
-              <div className="bg-white p-6 rounded-lg shadow-sm mb-4">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-gray-700">Status:</span>
-                  <span
-                    className={`px-3 py-1 text-sm rounded-full ${
-                      status === 'completed'
-                        ? 'bg-green-100 text-green-800'
-                        : status === 'failed'
-                        ? 'bg-red-100 text-red-800'
-                        : status === 'running'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {status}
-                  </span>
-                </div>
+          </div>
 
-                <div className="mb-2">
-                  <div className="flex justify-between text-sm text-gray-700 mb-1">
-                    <span>Progress</span>
-                    <span>
-                      Step {currentStep} of {totalSteps}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-                    />
-                  </div>
-                </div>
-
-                {isConnected ? (
-                  <p className="text-xs text-green-600 mt-2">● Connected</p>
-                ) : (
-                  <p className="text-xs text-gray-500 mt-2">○ Disconnected</p>
-                )}
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="text-lg font-semibold mb-2 text-gray-900">
-                  Progress Log
-                </h3>
-                <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-xs overflow-auto max-h-96">
-                  {progress || 'Waiting for output...'}
-                </div>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-900">Diagram</h3>
-                  <a
-                    href={viewerUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-blue-600 hover:text-blue-800"
-                  >
-                    Open full screen
-                  </a>
-                </div>
-                <div className="mt-3">
-                  <RalphFlowchart
-                    prd={loop.prd}
-                    currentStep={currentStep}
-                    totalSteps={totalSteps}
-                  />
-                </div>
-              </div>
-            </>
-          )}
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold mb-2 text-gray-900">
+              Progress Log
+            </h3>
+            <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-xs overflow-auto max-h-96">
+              {progress || 'Waiting for output...'}
+            </div>
+          </div>
         </div>
       </div>
     </div>
