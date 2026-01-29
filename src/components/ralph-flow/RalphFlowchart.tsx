@@ -36,8 +36,8 @@ const phaseColors: Record<Phase, { bg: string; border: string }> = {
 }
 
 const nodeSize = { w: 240, h: 86 }
-const xSpacing = 260
-const yBase = 80
+const xSpacing = 280
+const yBase = 60
 
 function makeNode(
   stepId: string,
@@ -50,11 +50,13 @@ function makeNode(
   const colors = phaseColors[phase]
   const isActive = status === 'active'
   const isDone = status === 'done'
+  const x = index * xSpacing
+  const y = yBase + (index % 2) * 140
 
   return {
     id: stepId,
     type: 'custom',
-    position: { x: index * xSpacing, y: yBase },
+    position: { x, y },
     data: { title, description, phase, status },
     draggable: false,
     style: {
