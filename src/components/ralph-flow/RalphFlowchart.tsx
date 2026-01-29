@@ -38,17 +38,17 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
             {idx > 0 && (
               <div
                 className={`absolute left-3 top-0 h-full w-0.5 ${
-                  isCompleted ? 'bg-green-500' : 'bg-gray-300'
+                  isCompleted ? 'bg-green-500' : 'bg-gray-700'
                 }`}
               />
             )}
             <div
               className={`relative border rounded-lg p-3 transition-colors ${
                 isActive
-                  ? 'border-blue-500 bg-blue-50'
+                  ? 'border-blue-500 bg-gray-800'
                   : isCompleted
-                  ? 'border-green-400 bg-green-50'
-                  : 'border-gray-200 bg-white'
+                  ? 'border-green-500 bg-gray-900'
+                  : 'border-gray-700 bg-gray-900'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -56,24 +56,26 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
                   <span
                     className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
                       isActive
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-blue-500 text-white'
                         : isCompleted
                         ? 'bg-green-500 text-white'
-                        : 'bg-gray-200 text-gray-700'
+                        : 'bg-gray-700 text-gray-200'
                     }`}
                   >
                     {stepNumber}
                   </span>
-                  <div className="font-semibold text-gray-900">
+                  <div className="font-semibold text-gray-100">
                     {story.title || story.id || `Step ${stepNumber}`}
                   </div>
                 </div>
-                <div className="text-xs uppercase tracking-wide text-gray-500">
+                <div className="text-xs uppercase tracking-wide text-gray-400">
                   {isActive ? 'Running' : isCompleted ? 'Done' : 'Pending'}
                 </div>
               </div>
               {story.description && (
-                <p className="mt-2 text-sm text-gray-700">{story.description}</p>
+                <p className="mt-2 text-sm text-gray-300">
+                  {story.description}
+                </p>
               )}
             </div>
           </div>

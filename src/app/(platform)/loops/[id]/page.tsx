@@ -64,31 +64,31 @@ export default function LoopPlaygroundPage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 text-gray-100">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{loop.name}</h1>
+        <h1 className="text-3xl font-bold text-gray-100 mb-2">{loop.name}</h1>
         {loop.description && (
-          <p className="text-gray-600">{loop.description}</p>
+          <p className="text-gray-400">{loop.description}</p>
         )}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Left: Editor */}
         <div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+          <h2 className="text-xl font-semibold mb-4 text-gray-100">
             PRD Configuration
           </h2>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-4 space-y-4">
+          <div className="bg-gray-900 border border-gray-800 p-6 rounded-lg shadow-sm mb-4 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 API Key
               </label>
               <select
                 value={selectedApiKeyId}
                 onChange={(e) => setSelectedApiKeyId(e.target.value)}
                 disabled={isExecuting}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-700 bg-gray-800 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select an API key</option>
                 {apiKeys.map((key) => (
@@ -100,14 +100,14 @@ export default function LoopPlaygroundPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Runner
               </label>
               <select
                 value={selectedTool}
                 onChange={(e) => setSelectedTool(e.target.value)}
                 disabled={isExecuting}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-700 bg-gray-800 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="claude-code">Claude Code</option>
                 <option value="codex">Codex</option>
@@ -118,32 +118,32 @@ export default function LoopPlaygroundPage({
             <button
               onClick={handleExecute}
               disabled={isExecuting || !selectedApiKeyId}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
             >
               {isExecuting ? 'Executing...' : 'Execute Loop'}
             </button>
           </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">PRD JSON</h3>
-              <pre className="text-sm bg-gray-50 p-4 rounded overflow-auto max-h-96">
-                {JSON.stringify(loop.prd, null, 2)}
-              </pre>
-              <p className="mt-3 text-xs text-gray-500">
-                Diagram below is rendered in-app from this PRD; no external viewer required.
-              </p>
+          <div className="bg-gray-900 border border-gray-800 p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold mb-2 text-gray-100">PRD JSON</h3>
+            <pre className="text-sm bg-gray-800 text-gray-100 p-4 rounded overflow-auto max-h-96">
+              {JSON.stringify(loop.prd, null, 2)}
+            </pre>
+            <p className="mt-3 text-xs text-gray-500">
+              Diagram below is rendered in-app from this PRD; no external viewer required.
+            </p>
             </div>
         </div>
 
         {/* Right: Visualization */}
         <div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+          <h2 className="text-xl font-semibold mb-4 text-gray-100">
             Execution Progress
           </h2>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-4">
+          <div className="bg-gray-900 border border-gray-800 p-6 rounded-lg shadow-sm mb-4">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-medium text-gray-700">Status:</span>
+              <span className="text-sm font-medium text-gray-300">Status:</span>
               <span
                 className={`px-3 py-1 text-sm rounded-full ${
                   status === 'completed'
@@ -160,7 +160,7 @@ export default function LoopPlaygroundPage({
             </div>
 
             <div className="mb-2">
-              <div className="flex justify-between text-sm text-gray-700 mb-1">
+              <div className="flex justify-between text-sm text-gray-300 mb-1">
                 <span>Progress</span>
                 <span>
                   Step {currentStep} of {totalSteps}
@@ -181,9 +181,9 @@ export default function LoopPlaygroundPage({
             )}
           </div>
 
-          <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div className="bg-gray-900 border border-gray-800 p-4 rounded-lg shadow-sm">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900">
+              <h3 className="text-sm font-semibold text-gray-100">
                 Live Diagram
               </h3>
               <span className="text-xs text-gray-500">
@@ -199,11 +199,11 @@ export default function LoopPlaygroundPage({
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold mb-2 text-gray-900">
+          <div className="bg-gray-900 border border-gray-800 p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold mb-2 text-gray-100">
               Progress Log
             </h3>
-            <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-xs overflow-auto max-h-96">
+            <div className="bg-black text-green-400 p-4 rounded font-mono text-xs overflow-auto max-h-96">
               {progress || 'Waiting for output...'}
             </div>
           </div>
