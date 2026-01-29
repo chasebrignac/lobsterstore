@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 export default function LoginPage() {
-  const allowTest = process.env.NEXT_PUBLIC_ALLOW_TEST_LOGIN === 'true'
   const [testEmail, setTestEmail] = useState(
     process.env.NEXT_PUBLIC_TEST_USER_EMAIL || ''
   )
@@ -48,49 +47,46 @@ export default function LoginPage() {
             Sign in with GitHub
           </button>
 
-          {allowTest && (
-            <div className="mt-6 border border-gray-800 rounded-lg p-4 text-left bg-gray-900 space-y-4">
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Test Email
-                </label>
-                <input
-                  value={testEmail}
-                  onChange={(e) => setTestEmail(e.target.value)}
-                  className="w-full bg-gray-800 text-white rounded px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="test@example.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Test Password
-                </label>
-                <input
-                  type="password"
-                  value={testPassword}
-                  onChange={(e) => setTestPassword(e.target.value)}
-                  className="w-full bg-gray-800 text-white rounded px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter test password"
-                />
-              </div>
-              <button
-                onClick={() =>
-                  signIn('credentials', {
-                    email: testEmail,
-                    password: testPassword,
-                    callbackUrl: '/dashboard',
-                  })
-                }
-                className="w-full px-4 py-2 bg-gray-200 text-black rounded-md hover:bg-white transition-colors font-semibold text-sm"
-              >
-                Sign in with Test Account
-              </button>
-              <p className="text-xs text-gray-500">
-                Set env: NEXT_PUBLIC_ALLOW_TEST_LOGIN=true, TEST_USER_EMAIL,
-                TEST_USER_PASSWORD (and matching server env).
-              </p>
+          <div className="mt-6 border border-gray-800 rounded-lg p-4 text-left bg-gray-900 space-y-4">
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">
+                Email
+              </label>
+              <input
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                className="w-full bg-gray-800 text-white rounded px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="test@example.com"
+              />
             </div>
-          )}
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={testPassword}
+                onChange={(e) => setTestPassword(e.target.value)}
+                className="w-full bg-gray-800 text-white rounded px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter password"
+              />
+            </div>
+            <button
+              onClick={() =>
+                signIn('credentials', {
+                  email: testEmail,
+                  password: testPassword,
+                  callbackUrl: '/dashboard',
+                })
+              }
+              className="w-full px-4 py-2 bg-gray-200 text-black rounded-md hover:bg-white transition-colors font-semibold text-sm"
+            >
+              Sign in with Email
+            </button>
+            <p className="text-xs text-gray-500">
+              Uses the in-app credentials provider (test user seeded).
+            </p>
+          </div>
 
           <p className="text-center text-sm text-gray-500 mt-8">
             By signing in, you agree to our{' '}
