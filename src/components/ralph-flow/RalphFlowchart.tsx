@@ -181,13 +181,14 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
               zoomOnScroll
               minZoom={0.5}
               maxZoom={2}
-              defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
               fitView
-              fitViewOptions={{ padding: 0.3 }}
+              fitViewOptions={{ padding: 0.35 }}
+              onInit={(instance) => instance.fitView({ padding: 0.35 })}
               zoomOnDoubleClick={false}
               panOnDrag
               proOptions={{ hideAttribution: true }}
               style={{ width: '100%', height: '100%' }}
+              selectNodesOnDrag={false}
             >
               <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
               <Controls showInteractive={false} />
