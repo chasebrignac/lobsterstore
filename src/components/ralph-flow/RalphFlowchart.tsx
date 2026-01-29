@@ -169,12 +169,14 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
 
   const instanceRef = useRef<ReactFlowInstance | null>(null)
   const [viewport, setViewport] = useState<Viewport | null>(null)
+  const [rfNodes, setRfNodes] = useState<Node[]>([])
 
   useEffect(() => {
     if (instanceRef.current) {
       // Fit to all nodes whenever node count changes
       instanceRef.current.fitView({ padding: 0.4, includeHiddenNodes: true })
       setViewport(instanceRef.current.getViewport())
+      setRfNodes(instanceRef.current.getNodes())
     }
   }, [nodes.length])
 
@@ -221,6 +223,9 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
               style={{ width: '100%', height: '100%' }}
               selectNodesOnDrag={false}
               onMoveEnd={(_, vp) => setViewport(vp)}
+              onNodesChange={() => {
+                if (instanceRef.current) setRfNodes(instanceRef.current.getNodes())
+              }}
             >
               <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#334155" />
               <Controls showInteractive={false} />
@@ -257,6 +262,21 @@ export function RalphFlowchart({ prd, currentStep, totalSteps }: Props) {
               <span>
                 x: {viewport.x.toFixed(1)} y: {viewport.y.toFixed(1)} zoom:{' '}
                 {viewport.zoom.toFixed(2)}
+              </span>
+            </div>
+          )}
+          {rfNodes.length > 0 && (
+            <div className={styles.debugRow}>
+              <span className={styles.debugId}>rf nodes</span>
+              <span>
+                {rfNodes
+                  .map(
+                    (n) =>
+                      `${n.id}[${Math.round(n.position.x)},${Math.round(
+                        n.position.y
+                      )}]`
+                  )
+                  .join(' • ')}
               </span>
             </div>
           )}
