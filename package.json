@@ -26,6 +26,7 @@
     "@types/react": "^19.2.10",
     "@xyflow/react": "^12.10.0",
     "autoprefixer": "^10.4.23",
+    "bcryptjs": "^3.0.3",
     "next": "^16.1.6",
     "next-auth": "^4.24.13",
     "postcss": "^8.5.6",
